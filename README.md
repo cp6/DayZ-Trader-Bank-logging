@@ -2,9 +2,7 @@
 
 ### Requires
 
-Trader and bank/ATM logging:[Trader Bank logging from Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=2114540423 "@TBLogging")
-
-Trader logging:[Trader logging from Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=2115376735 "@TLogging")
+[Trader Bank logging from Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=2114540423 "@TBLogging") OR [Trader logging from Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=2115376735 "@TLogging")
 
 [Trader mod by Dr_J0nes](https://steamcommunity.com/sharedfiles/filedetails/?id=1590841260)
 
