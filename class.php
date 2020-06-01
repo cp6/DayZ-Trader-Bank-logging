@@ -6,9 +6,9 @@
  */
 class configConnect
 {
-    const LOGS_DIR = "C:\Users\administrator\AppData\Local\DayZ\Trader\TBlogs\\";//Your DayZ server profile location
-    const HAS_TRADER = true;
-    const HAS_ATM = true;
+    const LOGS_DIR = "C:\Users\administrator\AppData\Local\DayZ\Trader\TBlogs\\";//TBlogs folder; Your DayZ server profile location
+    const HAS_TRADER = true;//Always be true
+    const HAS_ATM = true;//Set as false if not using banking/ATM mod
 
     public function db_connect(bool $select_only = false): object
     {
@@ -638,9 +638,11 @@ class dzTraderBankLogging
                     <li class="nav-item <?php echo $trade_table; ?>">
                         <a class="nav-link" href="trades_table.php">Trade recent table</a>
                     </li>
-                    <li class="nav-item <?php echo $bank_table; ?>">
-                        <a class="nav-link" href="bank_table.php">Bank recent table</a>
-                    </li>
+                    <?php if (configConnect::HAS_ATM) { ?>
+                        <li class="nav-item <?php echo $bank_table; ?>">
+                            <a class="nav-link" href="bank_table.php">Bank recent table</a>
+                        </li>
+                    <?php } ?>
                     <li class="nav-item <?php echo $item_stock_table; ?>">
                         <a class="nav-link" href="item_stock.php">Item Stock table</a>
                     </li>

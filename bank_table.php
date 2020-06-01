@@ -7,7 +7,7 @@ $dz = new dzTraderBankLogging();
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Trades table from past <?php echo $hours; ?> hours</title>
+    <title>Transactions table from past <?php echo $hours; ?> hours</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="style.min.css"/>
@@ -18,8 +18,11 @@ $dz = new dzTraderBankLogging();
         <div class="col-12">
             <?php
             $dz->navBar('BANK_TABLE');
-            $dz->bankTablePreface($hours, $limit);
-            $dz->recentBankTable($hours, $limit);
+            $cfg = new configConnect();
+            if ($cfg::HAS_ATM) {
+                $dz->bankTablePreface($hours, $limit);
+                $dz->recentBankTable($hours, $limit);
+            }
             $dz->footerText();
             ?>
         </div>

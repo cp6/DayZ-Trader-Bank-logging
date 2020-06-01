@@ -17,8 +17,11 @@
     $dz->traderTallies($hours);
     $dz->hotTradingRow($hours, 4);
     $dz->itemsCountTables(10);
-    $dz->richListTablePreface();
-    $dz->richListTable(10);
+    $cfg = new configConnect();
+    if ($cfg::HAS_ATM) {
+        $dz->richListTablePreface();
+        $dz->richListTable(10);
+    }
     $dz->mainTablePreface($hours, $limit);
     $dz->recentTradeTable($hours);
     $dz->footerText();
