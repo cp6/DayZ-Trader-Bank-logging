@@ -4,13 +4,10 @@
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS = @@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS = 0 */;
 /*!40101 SET @OLD_SQL_MODE = @@SQL_MODE, SQL_MODE = 'NO_AUTO_VALUE_ON_ZERO' */;
 
-
--- Dumping database structure for dz_tb_logs
-CREATE DATABASE IF NOT EXISTS `dz_tb_logs` /*!40100 DEFAULT CHARACTER SET latin1 */;
+create DATABASE IF NOT EXISTS `dz_tb_logs` /*!40100 DEFAULT CHARACTER SET latin1 */;
 USE `dz_tb_logs`;
 
--- Dumping structure for table dz_tb_logs.bank
-CREATE TABLE IF NOT EXISTS `bank`
+create TABLE IF NOT EXISTS `bank`
 (
     `type`     tinyint(1)   DEFAULT NULL,
     `amount`   int(11)      DEFAULT NULL,
@@ -24,9 +21,7 @@ CREATE TABLE IF NOT EXISTS `bank`
 ) ENGINE = InnoDB
   DEFAULT CHARSET = latin1;
 
--- Data exporting was unselected.
--- Dumping structure for table dz_tb_logs.items
-CREATE TABLE IF NOT EXISTS `items`
+create TABLE IF NOT EXISTS `items`
 (
     `id`        int(11) NOT NULL,
     `classname` varchar(124) DEFAULT NULL,
@@ -38,20 +33,16 @@ CREATE TABLE IF NOT EXISTS `items`
 ) ENGINE = InnoDB
   DEFAULT CHARSET = latin1;
 
--- Data exporting was unselected.
--- Dumping structure for table dz_tb_logs.players
-CREATE TABLE IF NOT EXISTS `players`
+create TABLE IF NOT EXISTS `players`
 (
     `uid`      varchar(124) DEFAULT NULL,
     `name`     varchar(124) DEFAULT NULL,
-    `datetime` datetime     DEFAULT current_timestamp(),
+    `datetime` datetime     DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY `Index 1` (`uid`, `name`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = latin1;
 
--- Data exporting was unselected.
--- Dumping structure for table dz_tb_logs.trader
-CREATE TABLE IF NOT EXISTS `trader`
+create TABLE IF NOT EXISTS `trader`
 (
     `type`          tinyint(1)   DEFAULT NULL,
     `amount`        int(11)      DEFAULT NULL,
