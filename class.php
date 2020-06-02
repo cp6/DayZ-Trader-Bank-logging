@@ -12,6 +12,8 @@ class configConnect
 
     const DISPLAY_PLAYER_NAMES = true;//Set as false if wanting to display player UID's
 
+    const FIX_BROKEN_LOG_LINES = false;//"Try to" fix log lines that are split into 2 (unknown cause)
+
     public function db_connect(bool $select_only = false): object
     {
         if ($select_only) {//SELECT only MySQL user privilege (front end)
@@ -102,6 +104,11 @@ class dzTraderBankLogging
         }
     }
 
+    public function lineValueCount(array $data)
+    {
+        return count($data);
+    }
+
     public function insertTraderTransaction(array $data): void
     {
         $db = $this->db_connect();
@@ -155,14 +162,38 @@ class dzTraderBankLogging
     {
         $file = configConnect::LOGS_DIR . $this->log_type . "_$this->date.log";//Full file link
         if ($this->isFileFound($file)) {//Log file locked and loaded
+            $stored_array = [];
             $line_count = 0;
             foreach (file($file) as $line) {//Go through each line, top to bottom
                 $line_count++;
                 $line_array = $this->lineExplode($line);//Splitting the line into an array based on ,
                 if ($this->log_type == 'trade') {//Its the trade log file
-                    $this->insertTraderTransaction($line_array);
-                    $this->insertItem($line_array[7], $line_array[4], $line_array[5]);
-                    $this->insertPlayer($line_array[8], $line_array[9]);
+                    if (configConnect::FIX_BROKEN_LOG_LINES) {
+                        if ($this->lineValueCount($line_array) == 10) {//All data is there
+                            $this->insertTraderTransaction($line_array);
+                            $this->insertItem($line_array[7], $line_array[4], $line_array[5]);
+                            $this->insertPlayer($line_array[8], $line_array[9]);
+                            $completed_line = true;
+                            $previous_complete = true;
+                        } else {//Line got split!?
+                            $completed_line = false;
+                            if (!$previous_complete && !$completed_line) {
+                                $build_arr = array_merge($stored_array, array_filter($line_array, 'strlen'));
+                                $line_array = $build_arr;
+                                $this->insertTraderTransaction($line_array);
+                                $this->insertItem($line_array[7], $line_array[4], $line_array[5]);
+                                $this->insertPlayer($line_array[8], $line_array[9]);
+
+                            } else {
+                                $stored_array = array_filter($line_array, 'strlen');//Use store array for first part of broken line
+                                $previous_complete = false;//Next loop will join arrays
+                            }
+                        }
+                    } else {//If a line is broken it just wont be added to DB + it will throw an error
+                        $this->insertTraderTransaction($line_array);
+                        $this->insertItem($line_array[7], $line_array[4], $line_array[5]);
+                        $this->insertPlayer($line_array[8], $line_array[9]);
+                    }
                 } elseif ($this->log_type == 'atm') {
                     $this->insertBankTransaction($line_array);
                     $this->insertPlayer($line_array[6], $line_array[7]);
