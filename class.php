@@ -237,7 +237,7 @@ class dzTraderBankLogging
         $this->tableThead(['Item', 'Player', 'Amount', 'Player amount', 'Datetime']);
         $db = $this->db_connect(true);
         $db->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
-        $select = $db->prepare("SELECT trader.type, trader.amount, trader.item_id, trader.player_amount, trader.player_uid, trader.datetime, items.name, items.classname FROM `trader` INNER JOIN items ON trader.item_id = items.id WHERE `datetime` > DATE_ADD(NOW(), INTERVAL -? HOUR) ORDER BY trader.datetime LIMIT ?;");
+        $select = $db->prepare("SELECT trader.type, trader.amount, trader.item_id, trader.player_amount, trader.player_uid, trader.datetime, items.name, items.classname FROM `trader` INNER JOIN items ON trader.item_id = items.id WHERE `datetime` > DATE_ADD(NOW(), INTERVAL -? HOUR) ORDER BY trader.datetime DESC LIMIT ?;");
         $select->execute([$hours, $limit]);
         while ($row = $select->fetch(PDO::FETCH_ASSOC)) {
             $type = $row['type'];
