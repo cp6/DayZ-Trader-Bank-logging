@@ -35,9 +35,15 @@ $dz->processLogs();
 //Dont need following if only doing trader logs:
 $dz->setLogType('atm');//ATM logs
 $dz->processLogs();
+
+//To Get yesterdays logs use setDateAsYesterday()
+//Like:
+$dz->setLogType('trade');//Trader logs
+$dz->setDateAsYesterday();//Get yesterdays (date) logfile
+$dz->processLogs();
 ```
 
-Point a Cron job at this for every one or two minutes for up-to date data or once an hour otherwise.
+Point a Cron job at this for two minutes for up-to date data or once an hour otherwise.
 
 
 `index.php` has most recent hours set as 24 by default and limit for most recent table as 100 default.

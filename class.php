@@ -50,6 +50,11 @@ class dzTraderBankLogging
         return (new configConnect)->db_connect($select_only);
     }
 
+    public function setDateAsYesterday(): void
+    {
+        $this->date = date('Y-m-d', strtotime("-1 days"));
+    }
+
     public function setLogType(string $log_type): void
     {
         if ($log_type === 'trade' || $log_type === 'atm') {
