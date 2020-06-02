@@ -155,7 +155,9 @@ class dzTraderBankLogging
     {
         $file = configConnect::LOGS_DIR . $this->log_type . "_$this->date.log";//Full file link
         if ($this->isFileFound($file)) {//Log file locked and loaded
+            $line_count = 0;
             foreach (file($file) as $line) {//Go through each line, top to bottom
+                $line_count++;
                 $line_array = $this->lineExplode($line);//Splitting the line into an array based on ,
                 if ($this->log_type == 'trade') {//Its the trade log file
                     $this->insertTraderTransaction($line_array);
@@ -166,6 +168,7 @@ class dzTraderBankLogging
                     $this->insertPlayer($line_array[6], $line_array[7]);
                 }
             }
+            echo "Found " . number_format($line_count, 0) . " lines in [" . $this->log_type . "_" . $this->date . ".log]<br>";
         } else {
             echo "$file NOT FOUND";
         }
