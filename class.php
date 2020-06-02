@@ -10,6 +10,8 @@ class configConnect
     const HAS_TRADER = true;//Always be true
     const HAS_ATM = true;//Set as false if not using banking/ATM mod
 
+    const DISPLAY_PLAYER_NAMES = true;//Set as false if wanting to display player UID's
+
     public function db_connect(bool $select_only = false): object
     {
         if ($select_only) {//SELECT only MySQL user privilege (front end)
@@ -232,6 +234,19 @@ class dzTraderBankLogging
         echo "</tbody></table>";
     }
 
+    public function playerNameForUID(string $uid)
+    {
+        $db = $this->db_connect(true);
+        $db->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
+        $select = $db->prepare("SELECT `name` FROM `players` WHERE `uid` = ? ORDER BY `datetime` DESC LIMIT 1;");
+        $select->execute([$uid]);
+        $player_name = $uid;
+        while ($row = $select->fetch(PDO::FETCH_ASSOC)) {
+            $player_name = $row['name'];
+        }
+        return $player_name;
+    }
+
     public function recentTradeTable(int $hours = 12, int $limit = 400)
     {
         $this->tableThead(['Item', 'Player', 'Amount', 'Player amount', 'Datetime']);
@@ -243,9 +258,14 @@ class dzTraderBankLogging
             $type = $row['type'];
             $amount = $row['amount'];
             $uid = $row['player_uid'];
+            if (configConnect::DISPLAY_PLAYER_NAMES) {
+                $player = $this->playerNameForUID($uid);
+            } else {
+                $player = $uid;
+            }
             echo "<tr class='" . $this->tradeTypeClass($type) . "'>
                      <td><a href='item_history.php?id={$row['item_id']}&hours=$hours'>{$row['name']}</a></td>
-                     <td><a href='player_history.php?uid=$uid&type=trade'>$uid</a></td>
+                     <td><a href='player_history.php?uid=$uid&type=trade'>$player</a></td>
                      <td>" . $this->tradeTypeSymbol($type) . "$amount</td>
                      <td>" . $row['player_amount'] . "</td>
                      <td>" . $this->doDateTimeFormat($row['datetime']) . "</td>
@@ -363,9 +383,14 @@ class dzTraderBankLogging
             $type = $row['type'];
             $amount = $row['amount'];
             $uid = $row['player_uid'];
+            if (configConnect::DISPLAY_PLAYER_NAMES) {
+                $player = $this->playerNameForUID($uid);
+            } else {
+                $player = $uid;
+            }
             echo "<tr class='" . $this->tradeTypeClass($type) . "'>
                      <td><a href='item_history.php?id={$row['item_id']}&hours=48'>{$row['name']}</a></td>
-                     <td><a href='player_history.php?uid=$uid&type=trade'>$uid</a></td>
+                     <td><a href='player_history.php?uid=$uid&type=trade'>$player</a></td>
                      <td>" . $this->tradeTypeString($type) . " for $amount</td>
                      <td>" . $row['player_amount'] . "</td>
                      <td>" . $this->doDateTimeFormat($row['datetime']) . "</td>
@@ -498,7 +523,13 @@ class dzTraderBankLogging
                 <?php
                 $data = $this->hotPlayerTrading($type, $past_hours, $amount);
                 foreach ($data as $row) {
-                    echo "<li class='list-group-item'><span class='badge badge-pill badge-info'>" . number_format($row['the_sum'], 0) . "</span> <a href='player_history.php?uid=" . $row['player_uid'] . "&type=trade'>" . $row['player_uid'] . "</a></li>";
+                    $uid = $row['player_uid'];
+                    if (configConnect::DISPLAY_PLAYER_NAMES) {
+                        $player = $this->playerNameForUID($uid);
+                    } else {
+                        $player = $uid;
+                    }
+                    echo "<li class='list-group-item'><span class='badge badge-pill badge-info'>" . number_format($row['the_sum'], 0) . "</span> <a href='player_history.php?uid=$uid&type=trade'>$player</a></li>";
                 }
                 ?>
             </ul>
@@ -728,6 +759,11 @@ class dzTraderBankLogging
         while ($row = $select->fetch(PDO::FETCH_ASSOC)) {
             $type = $row['type'];
             $uid = $row['uid'];
+            if (configConnect::DISPLAY_PLAYER_NAMES) {
+                $player = $this->playerNameForUID($uid);
+            } else {
+                $player = $uid;
+            }
             echo "<tr class='" . $this->tradeTypeClass($type) . "'>
                      <td>{$this->bankActionIntToString($type)}</td>
                      <td>" . number_format($row['amount'], 0) . "</td>
@@ -735,7 +771,7 @@ class dzTraderBankLogging
                      <td>" . number_format($row['p_after'], 0) . "</td>
                      <td>" . number_format($row['b_before'], 0) . "</td>
                      <td>" . number_format($row['b_after'], 0) . "</td>
-                     <td><a href='player_history.php?uid=$uid&type=bank'>$uid</a></td>
+                     <td><a href='player_history.php?uid=$uid&type=bank'>$player</a></td>
                      <td>" . $this->doDateTimeFormat($row['datetime']) . "</td>
                      </tr>";
         }
@@ -791,9 +827,14 @@ class dzTraderBankLogging
         while ($row = $select->fetch(PDO::FETCH_ASSOC)) {
             $amount = $row['MAX(b_after)'];
             $uid = $row['uid'];
+            if (configConnect::DISPLAY_PLAYER_NAMES) {
+                $player = $this->playerNameForUID($uid);
+            } else {
+                $player = $uid;
+            }
             echo "<tr class='normal-table'>
                      <td>" . number_format($amount, 0) . "</td>
-                     <td><a href='player_history.php?uid=$uid&type=trade'>$uid</a></td>
+                     <td><a href='player_history.php?uid=$uid&type=trade'>$player</a></td>
                      <td>" . $this->doDateTimeFormat($row['datetime']) . "</td>
                      </tr>";
         }
