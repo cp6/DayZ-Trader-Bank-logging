@@ -110,6 +110,21 @@ class dzTraderBankLogging
         }
     }
 
+    public function itemIdForClass(string $classname, string $name): int
+    {
+        $db = $this->db_connect();
+        $select = $db->prepare("SELECT `id` FROM `items` WHERE `classname` = ? LIMIT 1;");
+        $select->execute([$classname]);
+        $row = $select->fetch();
+        if ($select->rowCount() > 0) {
+            return $row['id'];
+        } else {
+            $insert = $db->prepare('INSERT IGNORE INTO `items` (`classname`, `name`) VALUES (?,?)');
+            $insert->execute([$classname, $name]);
+            return $db->lastInsertId();
+        }
+    }
+
     public function lineValueCount(array $data)
     {
         return count($data);
@@ -117,11 +132,12 @@ class dzTraderBankLogging
 
     public function insertTraderTransaction(array $data): void
     {
+        $item_id = $this->itemIdForClass($data[4], $data[5]);//Will insert classname & name if doesnt exist, returns id
         $db = $this->db_connect();
         $insert = $db->prepare('INSERT IGNORE INTO `trader` (`type`, `amount`, `player_amount`, `trader_uid`, `item_id`, `player_uid`, `datetime`) VALUES (?,?,?,?,?,?,?);');
-        $insert->execute([$this->tradeActionStringToInt($data[1]), $data[2], $data[3], $data[6], $data[7], $data[8], $data[0]]);
+        $insert->execute([$this->tradeActionStringToInt($data[1]), $data[2], $data[3], $data[6], $item_id, $data[8], $data[0]]);
         if ($insert->rowCount() >= 1) {//Row doesnt exist yet = fresh insert
-            $this->updateItem($data[7], $data[1]);//+ 1 onto bought or sold for item
+            $this->updateItem($item_id, $data[1]);//+ 1 onto bought or sold for item
         }
     }
 
@@ -134,13 +150,6 @@ class dzTraderBankLogging
             $insert = $db->prepare('UPDATE `items` set `bought` = (`bought` + 1) WHERE `id` = ? LIMIT 1;');
         }
         $insert->execute([$item_id]);
-    }
-
-    public function insertItem(int $id, string $classname, string $name): void
-    {
-        $db = $this->db_connect();
-        $insert = $db->prepare('INSERT IGNORE INTO `items` (`id`, `classname`, `name`) VALUES (:id, :classname, :name);');
-        $insert->execute(array(':id' => $id, ':classname' => $classname, ':name' => $name));
     }
 
     public function insertPlayer(string $uid, string $name): void
@@ -177,7 +186,6 @@ class dzTraderBankLogging
                     if (configConnect::FIX_BROKEN_LOG_LINES) {
                         if ($this->lineValueCount($line_array) == 10) {//All data is there
                             $this->insertTraderTransaction($line_array);
-                            $this->insertItem($line_array[7], $line_array[4], $line_array[5]);
                             $this->insertPlayer($line_array[8], $line_array[9]);
                             $completed_line = true;
                             $previous_complete = true;
@@ -187,7 +195,6 @@ class dzTraderBankLogging
                                 $build_arr = array_merge($stored_array, array_filter($line_array, 'strlen'));
                                 $line_array = $build_arr;
                                 $this->insertTraderTransaction($line_array);
-                                $this->insertItem($line_array[7], $line_array[4], $line_array[5]);
                                 $this->insertPlayer($line_array[8], $line_array[9]);
 
                             } else {
@@ -197,7 +204,6 @@ class dzTraderBankLogging
                         }
                     } else {//If a line is broken it just wont be added to DB + it will throw an error
                         $this->insertTraderTransaction($line_array);
-                        $this->insertItem($line_array[7], $line_array[4], $line_array[5]);
                         $this->insertPlayer($line_array[8], $line_array[9]);
                     }
                 } elseif ($this->log_type == 'atm') {

@@ -23,7 +23,7 @@ create TABLE IF NOT EXISTS `bank`
 
 create TABLE IF NOT EXISTS `items`
 (
-    `id`        int(11) NOT NULL,
+    `id`        int(11) NOT NULL AUTO_INCREMENT,
     `classname` varchar(124) DEFAULT NULL,
     `name`      varchar(124) DEFAULT NULL,
     `sold`      int(11)      DEFAULT 0,
