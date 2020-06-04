@@ -299,11 +299,7 @@ class dzTraderBankLogging
             $amount = $row['amount'];
             (configConnect::DISPLAY_ITEM_NAMES) ? $item = $row['name'] : $item = $row['classname'];
             $uid = $row['player_uid'];
-            if (configConnect::DISPLAY_PLAYER_NAMES) {
-                $player = $this->playerNameForUID($uid);
-            } else {
-                $player = $uid;
-            }
+            (configConnect::DISPLAY_PLAYER_NAMES) ? $player = $this->playerNameForUID($uid) : $player = $uid;
             echo "<tr class='" . $this->tradeTypeClass($type) . "'>
                      <td><a href='item_history.php?id={$row['item_id']}&hours=$hours'>$item</a></td>
                      <td><a href='player_history.php?uid=$uid&type=trade'>$player</a></td>
@@ -428,11 +424,7 @@ class dzTraderBankLogging
             $amount = $row['amount'];
             (configConnect::DISPLAY_ITEM_NAMES) ? $item = $row['name'] : $item = $row['classname'];
             $uid = $row['player_uid'];
-            if (configConnect::DISPLAY_PLAYER_NAMES) {
-                $player = $this->playerNameForUID($uid);
-            } else {
-                $player = $uid;
-            }
+            (configConnect::DISPLAY_PLAYER_NAMES) ? $player = $this->playerNameForUID($uid) : $player = $uid;
             echo "<tr class='" . $this->tradeTypeClass($type) . "'>
                      <td><a href='item_history.php?id={$row['item_id']}&hours=48'>$item</a></td>
                      <td><a href='player_history.php?uid=$uid&type=trade'>$player</a></td>
@@ -570,11 +562,7 @@ class dzTraderBankLogging
                 $data = $this->hotPlayerTrading($type, $past_hours, $amount);
                 foreach ($data as $row) {
                     $uid = $row['player_uid'];
-                    if (configConnect::DISPLAY_PLAYER_NAMES) {
-                        $player = $this->playerNameForUID($uid);
-                    } else {
-                        $player = $uid;
-                    }
+                    (configConnect::DISPLAY_PLAYER_NAMES) ? $player = $this->playerNameForUID($uid) : $player = $uid;
                     echo "<li class='list-group-item'><span class='badge badge-pill badge-info'>" . number_format($row['the_sum'], 0) . "</span> <a href='player_history.php?uid=$uid&type=trade'>$player</a></li>";
                 }
                 ?>
@@ -805,11 +793,7 @@ class dzTraderBankLogging
         while ($row = $select->fetch(PDO::FETCH_ASSOC)) {
             $type = $row['type'];
             $uid = $row['uid'];
-            if (configConnect::DISPLAY_PLAYER_NAMES) {
-                $player = $this->playerNameForUID($uid);
-            } else {
-                $player = $uid;
-            }
+            (configConnect::DISPLAY_PLAYER_NAMES) ? $player = $this->playerNameForUID($uid) : $player = $uid;
             echo "<tr class='" . $this->tradeTypeClass($type) . "'>
                      <td>{$this->bankActionIntToString($type)}</td>
                      <td>" . number_format($row['amount'], 0) . "</td>
@@ -874,11 +858,7 @@ class dzTraderBankLogging
         while ($row = $select->fetch(PDO::FETCH_ASSOC)) {
             $amount = $row['MAX(b_after)'];
             $uid = $row['uid'];
-            if (configConnect::DISPLAY_PLAYER_NAMES) {
-                $player = $this->playerNameForUID($uid);
-            } else {
-                $player = $uid;
-            }
+            (configConnect::DISPLAY_PLAYER_NAMES) ? $player = $this->playerNameForUID($uid) : $player = $uid;
             echo "<tr class='normal-table'>
                      <td>" . number_format($amount, 0) . "</td>
                      <td><a href='player_history.php?uid=$uid&type=trade'>$player</a></td>
