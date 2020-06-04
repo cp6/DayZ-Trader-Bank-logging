@@ -11,6 +11,7 @@ class configConnect
     const HAS_ATM = true;//Set as false if not using banking/ATM mod
 
     const DISPLAY_PLAYER_NAMES = true;//Set as false if wanting to display player UID's
+    const DISPLAY_ITEM_NAMES = true;//Set as false if wanting to display item class names
 
     const FIX_BROKEN_LOG_LINES = false;//"Try to" fix log lines that are split into 2 (unknown cause)
 
@@ -296,6 +297,7 @@ class dzTraderBankLogging
         while ($row = $select->fetch(PDO::FETCH_ASSOC)) {
             $type = $row['type'];
             $amount = $row['amount'];
+            (configConnect::DISPLAY_ITEM_NAMES) ? $item = $row['name'] : $item = $row['classname'];
             $uid = $row['player_uid'];
             if (configConnect::DISPLAY_PLAYER_NAMES) {
                 $player = $this->playerNameForUID($uid);
@@ -303,7 +305,7 @@ class dzTraderBankLogging
                 $player = $uid;
             }
             echo "<tr class='" . $this->tradeTypeClass($type) . "'>
-                     <td><a href='item_history.php?id={$row['item_id']}&hours=$hours'>{$row['name']}</a></td>
+                     <td><a href='item_history.php?id={$row['item_id']}&hours=$hours'>$item</a></td>
                      <td><a href='player_history.php?uid=$uid&type=trade'>$player</a></td>
                      <td>" . $this->tradeTypeSymbol($type) . "$amount</td>
                      <td>" . $row['player_amount'] . "</td>
@@ -331,9 +333,10 @@ class dzTraderBankLogging
             } else {
                 $count = $row['sold'];
             }
+            (configConnect::DISPLAY_ITEM_NAMES) ? $item = $row['name'] : $item = $row['classname'];
             if ($count == 0)//No need to show items that have count of 0
                 break;
-            echo "<tr class='normal-table'><td><a href='item_history.php?id={$row['id']}&hours=24'>{$row['name']}</a></td><td>$count</td></tr>";
+            echo "<tr class='normal-table'><td><a href='item_history.php?id={$row['id']}&hours=24'>$item</a></td><td>$count</td></tr>";
         }
         $this->tableClose();
     }
@@ -369,8 +372,9 @@ class dzTraderBankLogging
         while ($row = $select->fetch(PDO::FETCH_ASSOC)) {
             $type = $row['type'];
             $amount = $row['amount'];
+            (configConnect::DISPLAY_ITEM_NAMES) ? $item = $row['name'] : $item = $row['classname'];
             echo "<tr class='" . $this->tradeTypeClass($type) . "'>
-                     <td><a href='item_history.php?id={$row['item_id']}&hours=48'>{$row['name']}</a></td>
+                     <td><a href='item_history.php?id={$row['item_id']}&hours=48'>$item</a></td>
                      <td>" . $this->tradeTypeSymbol($type) . "$amount</td>
                      <td>" . $row['player_amount'] . "</td>
                      <td>" . $this->doDateTimeFormat($row['datetime']) . "</td>
@@ -401,8 +405,9 @@ class dzTraderBankLogging
         while ($row = $select->fetch(PDO::FETCH_ASSOC)) {
             $type = $row['type'];
             $amount = $row['amount'];
+            (configConnect::DISPLAY_ITEM_NAMES) ? $item = $row['name'] : $item = $row['classname'];
             echo "<tr class='" . $this->tradeTypeClass($type) . "'>
-                     <td><a href='item_history.php?id={$row['item_id']}&hours=48'>{$row['name']}</a></td>
+                     <td><a href='item_history.php?id={$row['item_id']}&hours=48'>$item</a></td>
                      <td>" . $this->tradeTypeSymbol($type) . "$amount</td>
                      <td>" . $row['player_amount'] . "</td>
                      <td>" . $this->doDateTimeFormat($row['datetime']) . "</td>
@@ -421,6 +426,7 @@ class dzTraderBankLogging
         while ($row = $select->fetch(PDO::FETCH_ASSOC)) {
             $type = $row['type'];
             $amount = $row['amount'];
+            (configConnect::DISPLAY_ITEM_NAMES) ? $item = $row['name'] : $item = $row['classname'];
             $uid = $row['player_uid'];
             if (configConnect::DISPLAY_PLAYER_NAMES) {
                 $player = $this->playerNameForUID($uid);
@@ -428,7 +434,7 @@ class dzTraderBankLogging
                 $player = $uid;
             }
             echo "<tr class='" . $this->tradeTypeClass($type) . "'>
-                     <td><a href='item_history.php?id={$row['item_id']}&hours=48'>{$row['name']}</a></td>
+                     <td><a href='item_history.php?id={$row['item_id']}&hours=48'>$item</a></td>
                      <td><a href='player_history.php?uid=$uid&type=trade'>$player</a></td>
                      <td>" . $this->tradeTypeString($type) . " for $amount</td>
                      <td>" . $row['player_amount'] . "</td>
@@ -513,7 +519,7 @@ class dzTraderBankLogging
         ($type === 'SOLD') ? $type_int = 2 : $type_int = 1;
         $db = $this->db_connect(true);
         $db->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
-        $select = $db->prepare("SELECT count(*) as the_count, item_id, items.name FROM `trader` INNER JOIN `items` ON trader.item_id = items.id WHERE trader.type = ? AND `datetime` > DATE_ADD(NOW(), INTERVAL -? HOUR) GROUP BY `item_id` ORDER BY the_count DESC LIMIT ?;");
+        $select = $db->prepare("SELECT count(*) as the_count, item_id, items.name, items.classname FROM `trader` INNER JOIN `items` ON trader.item_id = items.id WHERE trader.type = ? AND `datetime` > DATE_ADD(NOW(), INTERVAL -? HOUR) GROUP BY `item_id` ORDER BY the_count DESC LIMIT ?;");
         $select->execute([$type_int, $past_hours, $amount]);
         return $select->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -541,7 +547,8 @@ class dzTraderBankLogging
                 <?php
                 $data = $this->hotItems($type, $past_hours, $amount);
                 foreach ($data as $row) {
-                    echo "<li class='list-group-item'><span class='badge badge-pill badge-info'>" . $row['the_count'] . "</span> <a href='item_history.php?id={$row['item_id']}&hours=$past_hours'>" . $row['name'] . "</a></li>";
+                    (configConnect::DISPLAY_ITEM_NAMES) ? $item = $row['name'] : $item = $row['classname'];
+                    echo "<li class='list-group-item'><span class='badge badge-pill badge-info'>" . $row['the_count'] . "</span> <a href='item_history.php?id={$row['item_id']}&hours=$past_hours'>$item</a></li>";
                 }
                 ?>
             </ul>
@@ -829,7 +836,7 @@ class dzTraderBankLogging
     {
         $this->tableThead(['Item', 'Amount', 'Sold', 'Bought']);
         $db = $this->db_connect(true);
-        $select = $db->prepare("SELECT `id`, `name`, `bought`, `sold` FROM `items` ORDER BY `bought` DESC,`sold` DESC;");
+        $select = $db->prepare("SELECT `id`, `name`, `bought`, `sold`, `classname` FROM `items` ORDER BY `bought` DESC,`sold` DESC;");
         $select->execute();
         while ($row = $select->fetch(PDO::FETCH_ASSOC)) {
             if ($row['bought'] == 0 && $row['sold'] == 0)
@@ -840,8 +847,9 @@ class dzTraderBankLogging
             } else {
                 $type = 2;
             }
+            (configConnect::DISPLAY_ITEM_NAMES) ? $item = $row['name'] : $item = $row['classname'];
             echo "<tr class='" . $this->tradeTypeClass($type) . "'>
-             <td><a href='item_history.php?id={$row['id']}&hours=24'>{$row['name']}</a>
+             <td><a href='item_history.php?id={$row['id']}&hours=24'>$item</a>
              </td><td>$rolling_count</td>
              </td><td>" . $row['sold'] . "</td>
              </td><td>" . $row['bought'] . "</td>
