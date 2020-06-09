@@ -17,9 +17,14 @@ $dz = new dzTraderBankLogging();
     <div class="row">
         <div class="col-12">
             <?php
-            $dz->navBar('ITEM_HISTORY');
-            ($item_id) ? $dz->itemTradeHistoryTable($item_id, $hours) : $dz->noItemIdSetCard();
-            $dz->footerText();
+            if ($dz->mainViewSystem()) {//Is admin system in use or everyone can view
+                $dz->navBar('ITEM_HISTORY');
+                ($item_id) ? $dz->itemTradeHistoryTable($item_id, $hours) : $dz->noItemIdSetCard();
+                $dz->footerText();
+            } else {
+                $dz->loginButtonPressed();//Login button was pressed
+                $dz->unAuthOutputs();//Not an admin OR login is required
+            }
             ?>
         </div>
     </div>

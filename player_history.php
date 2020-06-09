@@ -26,14 +26,19 @@ if ($type == 'trade') {
     <div class="row">
         <div class="col-12">
             <?php
-            $dz->navBar('PLAYER_HISTORY');
-            $dz->playerHistoryCard($uid, 'trade');
-            if ($type == 'trade') {
-                $dz->playerTradeHistoryTable($uid, $action, $days);
-            } elseif ($type == 'atm') {
-                $dz->playerATMHistoryTable($uid);
+            if ($dz->mainViewSystem()) {//Is admin system in use or everyone can view
+                $dz->navBar('PLAYER_HISTORY');
+                $dz->playerHistoryCard($uid, 'trade');
+                if ($type == 'trade') {
+                    $dz->playerTradeHistoryTable($uid, $action, $days);
+                } elseif ($type == 'atm') {
+                    $dz->playerATMHistoryTable($uid);
+                }
+                $dz->footerText();
+            } else {
+                $dz->loginButtonPressed();//Login button was pressed
+                $dz->unAuthOutputs();//Not an admin OR login is required
             }
-            $dz->footerText();
             ?>
         </div>
     </div>

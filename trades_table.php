@@ -17,9 +17,15 @@ $dz = new dzTraderBankLogging();
     <div class="row">
         <div class="col-12">
             <?php
-            $dz->navBar('TRADE_TABLE');
-            $dz->mainTablePreface($hours, $limit);
-            $dz->recentTradeTable($hours, $limit);
+            if ($dz->mainViewSystem()) {//Is admin system in use or everyone can view
+                $dz->navBar('TRADE_TABLE');
+                $dz->mainTablePreface($hours, $limit);
+                $dz->recentTradeTable($hours, $limit);
+                $dz->footerText();
+            } else {
+                $dz->loginButtonPressed();//Login button was pressed
+                $dz->unAuthOutputs();//Not an admin OR login is required
+            }
             ?>
         </div>
     </div>

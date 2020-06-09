@@ -15,10 +15,15 @@
             <?php
             require_once('class.php');
             $dz = new dzTraderBankLogging();
-            $dz->navBar('ITEM_STOCK_TABLE');
-            $dz->itemStockTablePreface();
-            $dz->itemStockTable();
-            $dz->footerText();
+            if ($dz->mainViewSystem()) {//Is admin system in use or everyone can view
+                $dz->navBar('ITEM_STOCK_TABLE');
+                $dz->itemStockTablePreface();
+                $dz->itemStockTable();
+                $dz->footerText();
+            } else {
+                $dz->loginButtonPressed();//Login button was pressed
+                $dz->unAuthOutputs();//Not an admin OR login is required
+            }
             ?>
         </div>
     </div>

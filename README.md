@@ -20,6 +20,8 @@ Run `database.sql` onto your MySQL server.
 Edit in MySQL connection details, starting line 16 `class.php`. 
 You can have a SELECT only privileged user for tight security on the front end or just use an INSERT, UPDATE, SELECT privileged user for the whole class.
 
+If using admin system add your Steam API key into line 20 of `class.php` at `$api_key = 'APIKEYHERE';`
+
 #### Fetching logs
 
 Putting log files into the Database (`fetch.php`):
@@ -42,16 +44,37 @@ $dz->setLogType('trade');//Trader logs
 $dz->setDateAsYesterday();//Get yesterdays (date) logfile
 $dz->processLogs();
 ```
-
 Point a Cron job at this for two minutes for up-to date data or once an hour otherwise.
+___
 
+### Admin system
+Setting 
+```php
+ONLY_ADMINS_CAN_VIEW = true;
+```
+
+Means that to access any of the pages you need to sign in with Steam and have your Steam uid in the admins table.
+
+This authorization is done with [OpenId](https://openid.net/) `openid.php`
+
+#####Adding admins:
+```sql
+INSERT IGNORE INTO `dz_tb_logs`.`admins` (`uid`) VALUES ('ADMIN_STEAM_UID_HERE');
+```
+
+#####Updating existing database to add admin table:
+*Only for those with a previous version installed
+```sql
+USE `dz_tb_logs`;
+CREATE TABLE `admins` (
+	`uid` VARCHAR(64) NULL,
+	PRIMARY KEY (`uid`)
+)
+COLLATE='latin1_swedish_ci';
+```
 
 `index.php` has most recent hours set as 24 by default and limit for most recent table as 100 default.
 Change these with: `index.php?hours=X&limit=X`
-
-
-__NOTE There is no access protection for the front end, it is best to have front end files on a localhost__
-
 
 #### Screenshots
 

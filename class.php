@@ -15,6 +15,11 @@ class configConnect
 
     const FIX_BROKEN_LOG_LINES = false;//"Try to" fix log lines that are split into 2 (unknown cause)
 
+    const ONLY_ADMINS_CAN_VIEW = true;
+
+    public $api_key = 'E05C134E8206366F28894DF6279C9CF9';//Steam api key
+    private $logout_page = 'logout.php';
+
     public function db_connect(bool $select_only = false): object
     {
         if ($select_only) {//SELECT only MySQL user privilege (front end)
@@ -36,7 +41,7 @@ class configConnect
     }
 }
 
-class dzTraderBankLogging
+class dzTraderBankLogging extends configConnect
 {
     private $log_type;
     private $date;
@@ -44,6 +49,13 @@ class dzTraderBankLogging
     public function __construct()
     {
         $this->date = date('Y-m-d');
+        if (configConnect::HAS_ATM) {
+            $this->sessionStart();//Start sessions. IMPORTANT
+        }
+        if (empty((new configConnect)->api_key) && configConnect::ONLY_ADMINS_CAN_VIEW) {
+            echo "<div style='display: block; width: 100%; background-color: #e33434; text-align: center;'>Please supply a Steam API key<br>Put it in class.php at line 5</div>";
+            exit;
+        }
     }
 
     public function db_connect(bool $select_only = false): object
@@ -418,7 +430,6 @@ class dzTraderBankLogging
         $this->tableClose();
     }
 
-
     public function itemTradeHistoryTable(string $item_id, int $hours = 24)
     {
         $this->tableThead(['Item', 'Player', 'Amount', 'Player amount', 'Datetime']);
@@ -623,7 +634,6 @@ class dzTraderBankLogging
         }
     }
 
-
     public function playerData(string $uid)
     {
         $db = $this->db_connect(true);
@@ -632,7 +642,6 @@ class dzTraderBankLogging
         $select->execute([$uid]);
         return $select->fetchAll(PDO::FETCH_ASSOC);
     }
-
 
     public function noPlayerFoundCard(string $uid_tried)
     {
@@ -718,6 +727,11 @@ class dzTraderBankLogging
                     <li class="nav-item <?php echo $item_stock_table; ?>">
                         <a class="nav-link" href="item_stock.php">Item Stock table</a>
                     </li>
+                    <?php if ($this->checkIsLoggedIn()) { ?>
+                        <li class="nav-item">
+                            <?php echo $this->logoutButton(); ?>
+                        </li>
+                    <?php } ?>
                 </ul>
                 <form class="form-inline my-2 my-lg-0" method="post" action="player_history.php?hours=48">
                     <input class="form-control mr-sm-2" name="uid" id="uid" type="text" placeholder="Player UID"
@@ -876,8 +890,197 @@ class dzTraderBankLogging
     }
 
     public function footerText()
-    {
+    {//Simple footer text
         echo "<p class='footer-text'>DayZ Trader & Banking logs</p>";
+    }
+
+    public function checkIfAdmin(string $uid): bool
+    {//Checks if uid found in admin table
+        $db = $this->db_connect();
+        $select = $db->prepare("SELECT `uid` FROM `admins` WHERE `uid` = ? LIMIT 1;");
+        $select->execute([$uid]);
+        $row = $select->fetch();
+        if ($select->rowCount() > 0) {
+            return true;//Row found (is admin)
+        } else {
+            return false;
+        }
+    }
+
+    public function mainViewSystem()
+    {//Determines if logged in AND on admin list required to view
+        $this->sessionStart();//Start session if none already started
+        if (configConnect::ONLY_ADMINS_CAN_VIEW) {//Only admins can view
+            if (isset($_SESSION['steamid']) && !empty($_SESSION['steamid'])) {
+                $uid = $_SESSION['steamid'];
+                return $this->checkIfAdmin($uid);//True on admin / false on not an admin
+            } else {
+                return false;//Not logged in
+            }
+        } else {
+            return true;//Everyone can view
+        }
+    }
+
+    public function checkIsLoggedIn(): bool
+    {//Checks if session is found, this is only set upon log in
+        $this->sessionStart();//Start session if none already started
+        if (isset($_SESSION['steamid']) && !empty($_SESSION['steamid'])) {
+            $this->uid = $_SESSION['steamid'];//Set uid property as the Steam uid from session
+            return true;//Logged in
+        } else {
+            return false;//Not logged in
+        }
+    }
+
+    public function loginRequiredCard()
+    {//ONLY_ADMINS_CAN_VIEW = true. You must log in with Steam
+        ?>
+        <div class="row text-center">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Admin system in use</h2>
+                    </div>
+                    <div class="card-body">
+                        <p>If your Steam UID is listed as an admin you must login to view.</p>
+                        <?php $this->loginButton(); ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php
+    }
+
+    public function notAdminCard()
+    {//Logged in but NOT on admin list. Show this:
+        $data = $this->userData();
+        ?>
+        <div class="row text-center">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>You're not an admin</h2>
+                    </div>
+                    <div class="card-body">
+                        <p><?php echo "{$data['name']} your UID {$data['steam_id']} is not on the admin list."; ?></p>
+                        <?php $this->logoutButton(); ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php
+    }
+
+    public function logoutButton(): void
+    {//Simple logout button goes to logout.php
+        echo "<a class='btn purple-btn my-2 my-sm-0' href='logout.php' role='button'>Logout</a>";
+    }
+
+    public function loginButton()
+    {//Display Steam login button
+        echo "<a href='?login'><img src='https://steamcommunity-a.akamaihd.net/public/images/signinthroughsteam/sits_02.png'></a>";
+    }
+
+    public function loginButtonPressed(): void
+    {//Login button was pressed on page. ?login
+        if (isset($_GET['login'])) {//Login button was pressed
+            $this->doAuth();//OpenId auth
+        }
+    }
+
+    public function headerExit(string $location, bool $exit = true): void
+    {//Redirect with optional exit;
+        header("Location: $location");
+        if ($exit) {
+            exit;
+        }
+    }
+
+    public function logout(bool $redirect = false, string $redirect_to = 'index.php'): void
+    {
+        $this->sessionDestroy();//Destroys session
+        if ($redirect) {
+            $this->headerExit($redirect_to);
+        }
+    }
+
+    public function doAuth(): void
+    {//Openid auth
+        require_once('openid.php');
+        try {
+            $openid = new LightOpenID($_SERVER['SERVER_NAME']);
+            if (!$openid->mode) {
+                $openid->identity = 'https://steamcommunity.com/openid';
+                $this->headerExit($openid->authUrl(), false);
+            } elseif ($openid->mode == 'cancel') {
+                echo 'User has canceled authentication!';
+            } else {
+                if ($openid->validate()) {
+                    $id = $openid->identity;
+                    $ptn = "/^https?:\/\/steamcommunity\.com\/openid\/id\/(7[0-9]{15,25}+)$/";
+                    preg_match($ptn, $id, $matches);
+                    $_SESSION['steamid'] = $matches[1];//Session set
+                    if (!headers_sent()) {
+                        $this->headerExit($_SERVER['PHP_SELF']);
+                    } else {
+                        ?>
+                        <script type="text/javascript">
+                            window.location.href = "<?=$_SERVER['PHP_SELF']?>";
+                        </script>
+                        <noscript>
+                            <meta http-equiv="refresh" content="0;url=<?= $_SERVER['PHP_SELF'] ?>"/>
+                        </noscript>
+                        <?php
+                        exit;
+                    }
+                } else {
+                    echo "User is not logged in";
+                }
+            }
+        } catch (ErrorException $e) {
+            echo $e->getMessage();
+        }
+    }
+
+    public function userData(): array
+    {//Player's steam data
+        if (empty($_SESSION['steam_uptodate']) or empty($_SESSION['steam_personaname'])) {
+            $content = json_decode(file_get_contents("https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=" . $this->api_key . "&steamids=" . $_SESSION['steamid']), true);
+            $pd = $content['response']['players'][0];
+            $_SESSION['steam_steamid'] = $pd['steamid'];
+        }
+        $this->user_data = array(
+            'steam_id' => $_SESSION['steam_steamid'],
+            'name' => $pd['personaname'],
+            'avatar' => $pd['avatarfull'],
+            'avatar_med' => $pd['avatarmedium'],
+            'created' => $pd['timecreated'],
+            'state' => $pd['personastate'],
+            'profile_state' => $pd['profilestate'],
+            'url' => $pd['profileurl']
+        );
+        return $this->user_data;
+    }
+
+    public function sessionStart(): void
+    {//Start session if none exists
+        if (session_status() === PHP_SESSION_NONE) session_start();
+    }
+
+    public function sessionDestroy(): void
+    {//Destroys session
+        session_unset();
+        session_destroy();
+    }
+
+    public function unAuthOutputs()
+    {//Not on admin list OR not logged in and its required
+        if ($this->checkIsLoggedIn()) {
+            $this->notAdminCard();//Logged in but not on admin list
+        } else {
+            $this->loginRequiredCard();
+        }
     }
 
     //END OF CLASS
