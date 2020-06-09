@@ -17,7 +17,7 @@ class configConnect
 
     const ONLY_ADMINS_CAN_VIEW = true;
 
-    public $api_key = 'E05C134E8206366F28894DF6279C9CF9';//Steam api key
+    public $api_key = '';//Steam api key
     private $logout_page = 'logout.php';
 
     public function db_connect(bool $select_only = false): object

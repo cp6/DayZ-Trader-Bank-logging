@@ -17,8 +17,9 @@ If you are only doing trader logging set `HAS_ATM = false;` at line 11 of `class
 
 Run `database.sql` onto your MySQL server.
 
-Edit in MySQL connection details, starting line 16 `class.php`. 
-You can have a SELECT only privileged user for tight security on the front end or just use an INSERT, UPDATE, SELECT privileged user for the whole class.
+Edit in MySQL connection details, starting line 16 of `class.php`. 
+
+*You can have a SELECT only privileged user for tight security on the front end or just use an INSERT, UPDATE, SELECT privileged user for the whole class.*
 
 If using admin system add your Steam API key into line 20 of `class.php` at `$api_key = 'APIKEYHERE';`
 
@@ -48,21 +49,24 @@ Point a Cron job at this for two minutes for up-to date data or once an hour oth
 ___
 
 ### Admin system
+You can now protect the pages from anyone and everyone viewing them if they knew its URL.
+
 Setting 
 ```php
 ONLY_ADMINS_CAN_VIEW = true;
 ```
+at line 18 of `class.php`
 
 Means that to access any of the pages you need to sign in with Steam and have your Steam uid in the admins table.
 
 This authorization is done with [OpenId](https://openid.net/) `openid.php`
 
-#####Adding admins:
+##### Adding admins:
 ```sql
 INSERT IGNORE INTO `dz_tb_logs`.`admins` (`uid`) VALUES ('ADMIN_STEAM_UID_HERE');
 ```
 
-#####Updating existing database to add admin table:
+##### Updating existing database to add admin table:
 *Only for those with a previous version installed
 ```sql
 USE `dz_tb_logs`;
