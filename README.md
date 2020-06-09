@@ -21,7 +21,7 @@ Edit in MySQL connection details, starting line 16 of `class.php`.
 
 *You can have a SELECT only privileged user for tight security on the front end or just use an INSERT, UPDATE, SELECT privileged user for the whole class.*
 
-If using admin system add your Steam API key into line 20 of `class.php` at `$api_key = 'APIKEYHERE';`
+If using admin system add your Steam API key into line 20 of `class.php` at `$api_key = '';`
 
 #### Fetching logs
 
