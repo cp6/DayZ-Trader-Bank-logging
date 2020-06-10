@@ -974,7 +974,7 @@ class dzTraderBankLogging extends configConnect
 
     public function logoutButton(): void
     {//Simple logout button goes to logout.php
-        echo "<a class='btn purple-btn my-2 my-sm-0' href='logout.php' role='button'>Logout</a>";
+        echo "<a class='btn orange-btn my-2 my-sm-0' href='logout.php' role='button'>Logout</a>";
     }
 
     public function loginButton()
