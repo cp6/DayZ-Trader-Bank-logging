@@ -16,6 +16,8 @@ class configConnect
     const FIX_BROKEN_LOG_LINES = false;//"Try to" fix log lines that are split into 2 (unknown cause)
 
     const ONLY_ADMINS_CAN_VIEW = true;
+    
+    const TIMEZONE = 'Europe/Berlin';//Change to your Timezone (sometimes the Webserver and local Machine has different timezones)
 
     public $api_key = '';//Steam api key
     private $logout_page = 'logout.php';
@@ -48,6 +50,7 @@ class dzTraderBankLogging extends configConnect
 
     public function __construct()
     {
+        date_default_timezone_set(configConnect::TIMEZONE);
         $this->date = date('Y-m-d');
         if (configConnect::HAS_ATM) {
             $this->sessionStart();//Start sessions. IMPORTANT
