@@ -17,6 +17,8 @@ class configConnect
 
     const ONLY_ADMINS_CAN_VIEW = true;
 
+    const TIMEZONE = '';//Force a Timezone. Leave empty for default server timezone (optimal) https://www.w3schools.com/php/php_ref_timezones.asp
+
     public $api_key = '';//Steam api key
     private $logout_page = 'logout.php';
 
@@ -48,6 +50,9 @@ class dzTraderBankLogging extends configConnect
 
     public function __construct()
     {
+        if (!empty(configConnect::TIMEZONE)) {
+            date_default_timezone_set(configConnect::TIMEZONE);
+        }
         $this->date = date('Y-m-d');
         if (configConnect::HAS_ATM) {
             $this->sessionStart();//Start sessions. IMPORTANT
