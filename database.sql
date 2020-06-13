@@ -9,6 +9,10 @@
 CREATE DATABASE IF NOT EXISTS `dz_tb_logs` /*!40100 DEFAULT CHARACTER SET latin1 */;
 USE `dz_tb_logs`;
 
+CREATE TABLE `admins` (
+  `uid` varchar(64) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
 -- Dumping structure for table dz_tb_logs.bank
 CREATE TABLE IF NOT EXISTS `bank`
 (
@@ -63,3 +67,13 @@ CREATE TABLE IF NOT EXISTS `trader`
     UNIQUE KEY `Index 1` (`type`, `datetime`, `player_uid`, `item_id`, `player_amount`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = latin1;
+  
+  ALTER TABLE `admins`
+  ADD PRIMARY KEY (`uid`);
+  
+  ALTER TABLE `items`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
+  
+  ALTER TABLE `items`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `Index 2` (`classname`);
